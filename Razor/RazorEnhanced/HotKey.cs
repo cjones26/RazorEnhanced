@@ -450,6 +450,29 @@ namespace RazorEnhanced
                         Dress.DressFStart();
                         break;
 
+                    case "Macro":
+                        if (RazorEnhanced.Settings.HotKey.FindString(k) == "Stop All")
+                        {
+                            RazorEnhanced.Misc.SendMessage("Stopping all macros...", 33, false);
+                            RazorEnhanced.Macros.MacroManager.StopAllMacros();
+                        }
+                        break;
+
+                    case "MList":
+                        var macro = RazorEnhanced.Macros.MacroManager.FindMacro(k);
+                        if (macro != null)
+                        {
+                            if (macro.IsRunning)
+                            {
+                                macro.Stop();
+                            }
+                            else
+                            {
+                                macro.Play();
+                            }
+                        }
+                        break;
+
                     case "UseVirtue":
                         RazorEnhanced.Player.InvokeVirtue(RazorEnhanced.Settings.HotKey.FindString(k));
                         break;
@@ -1925,11 +1948,25 @@ namespace RazorEnhanced
                 Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes[7].Nodes[1].Nodes.Add(GenerateNode(keydata));
             }
 
+            // Macro
+            Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes.Add("Macro");
+            keylist = RazorEnhanced.Settings.HotKey.ReadGroup("Macro");
+            foreach (HotKeyData keydata in keylist)
+                Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes[8].Nodes.Add(GenerateNode(keydata));
+
+            // Macro -> List
+            Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes[8].Nodes.Add("MList", "List");
+            keylist = RazorEnhanced.Settings.HotKey.ReadMacro();
+            foreach (HotKeyData keydata in keylist)
+            {
+                Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes[8].Nodes[1].Nodes.Add(GenerateNode(keydata));
+            }
+
             // Virtue
             Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes.Add("Virtue");
             keylist = RazorEnhanced.Settings.HotKey.ReadGroup("UseVirtue");
             foreach (HotKeyData keydata in keylist)
-                Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes[8].Nodes.Add(GenerateNode(keydata));
+                Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes[9].Nodes.Add(GenerateNode(keydata));
 
             Engine.MainWindow.HotKeyTreeView.Nodes[0].Expand();
         }
@@ -2063,6 +2100,31 @@ namespace RazorEnhanced
             Assistant.Engine.MainWindow.UpdateScriptGridKey();
         }
 
+        internal static void UpdateMacroKey(TreeNode node, bool passkey)
+        {
+            string name = node.Name;
+            if (!RazorEnhanced.Settings.HotKey.AssignedKey(m_key))
+            {
+                RazorEnhanced.Macros.MacroManager.UpdateMacroKey(name, m_key, passkey);
+                node.Text = node.Name + " ( " + KeyString(m_key) + " )";
+                node.ForeColor = System.Drawing.Color.DarkGreen;
+            }
+            else
+            {
+                var dialogResult = RazorEnhanced.UI.RE_MessageBox.Show("Replace Existing HotKey?",
+                    $"Key: {KeyString(m_key)} already assigned!\r\nWant to replace?",
+                    ok: "Yes", no: "No", cancel: null, backColor: null);
+                if (dialogResult == DialogResult.Yes)
+                {
+                    RazorEnhanced.Settings.HotKey.UnassignKey(m_key);
+                    RazorEnhanced.Macros.MacroManager.UpdateMacroKey(name, m_key, passkey);
+                    UpdateOldTreeView(Assistant.Engine.MainWindow.HotKeyTreeView.Nodes, m_key);
+                    node.Text = node.Name + " ( " + KeyString(m_key) + " )";
+                    node.ForeColor = System.Drawing.Color.DarkGreen;
+                }
+            }
+        }
+
         internal static void UpdateMaster()
         {
             if (!RazorEnhanced.Settings.HotKey.AssignedKey(m_masterkey))
@@ -2091,6 +2153,10 @@ namespace RazorEnhanced
             {
                 Scripts.UpdateScriptKey(name, Keys.None, true);
                 Assistant.Engine.MainWindow.UpdateScriptGridKey();
+            }
+            else if (group == "MList")
+            {
+                RazorEnhanced.Macros.MacroManager.UpdateMacroKey(name, Keys.None, true);
             }
             else if (group == "TList")
                 RazorEnhanced.Settings.HotKey.UpdateTargetKey(name, Keys.None, true);

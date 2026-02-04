@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace RazorEnhanced.Macros
 {
@@ -730,6 +731,62 @@ namespace RazorEnhanced.Macros
                     AddMacro(macro);
             }
         }
+
+        #region Hotkey Support
+
+        /// <summary>
+        /// Find a macro by its assigned hotkey
+        /// </summary>
+        public static Macro FindMacro(Keys key)
+        {
+            return m_Macros.FirstOrDefault(m => m.Hotkey == key);
+        }
+
+        /// <summary>
+        /// Find a macro by name
+        /// </summary>
+        public static Macro FindMacroByName(string name)
+        {
+            return m_Macros.FirstOrDefault(m => m.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Check if a key is assigned to any macro
+        /// </summary>
+        public static bool UsingKey(Keys key)
+        {
+            return m_Macros.Any(m => m.Hotkey == key);
+        }
+
+        /// <summary>
+        /// Update the hotkey for a macro
+        /// </summary>
+        public static void UpdateMacroKey(string name, Keys key, bool passkey)
+        {
+            var macro = FindMacroByName(name);
+            if (macro != null)
+            {
+                macro.Hotkey = key;
+                macro.HotKeyPass = passkey;
+                SaveMacros();
+            }
+        }
+
+        /// <summary>
+        /// Clear the hotkey assignment for a macro that has the specified key
+        /// </summary>
+        public static void ClearMacroKey(Keys key)
+        {
+            var macro = FindMacro(key);
+            if (macro != null)
+            {
+                macro.Hotkey = Keys.None;
+                macro.HotKeyPass = true;
+                SaveMacros();
+            }
+        }
+
+        #endregion
 
     }
 }

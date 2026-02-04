@@ -32,6 +32,10 @@ namespace Assistant
                 {
                     RazorEnhanced.HotKey.UpdateDressKey(hotkeytreeView.SelectedNode, hotkeypassCheckBox.Checked);     // Aggiorno hotkey Dress List
                 }
+                else if (hotkeytreeView.SelectedNode.Parent.Name != null && hotkeytreeView.SelectedNode.Parent.Name == "MList")
+                {
+                    RazorEnhanced.HotKey.UpdateMacroKey(hotkeytreeView.SelectedNode, hotkeypassCheckBox.Checked);     // Aggiorno hotkey Macro
+                }
                 else
                     RazorEnhanced.HotKey.UpdateKey(hotkeytreeView.SelectedNode, hotkeypassCheckBox.Checked);
             }

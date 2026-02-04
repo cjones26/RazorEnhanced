@@ -2180,6 +2180,10 @@ namespace RazorEnhanced
             hotkeyrow.ItemArray = new object[] { "Script", "Stop All", Keys.None, true };
             hotkey.Rows.Add(hotkeyrow);
 
+            hotkeyrow = hotkey.NewRow();
+            hotkeyrow.ItemArray = new object[] { "Macro", "Stop All", Keys.None, true };
+            hotkey.Rows.Add(hotkeyrow);
+
             return hotkey;
 
 
@@ -4772,6 +4776,20 @@ namespace RazorEnhanced
                 return (from DataRow row in m_Dataset.Tables["DRESS_LISTS"].Rows let name = (string)row["Description"] let key = (Keys)Convert.ToInt32(row["HotKey"]) select new RazorEnhanced.HotKey.HotKeyData(name, key)).ToList();
             }
 
+            internal static List<RazorEnhanced.HotKey.HotKeyData> ReadMacro()
+            {
+                List<RazorEnhanced.HotKey.HotKeyData> retList = new();
+
+                foreach (var macro in RazorEnhanced.Macros.MacroManager.GetMacros())
+                {
+                    string name = macro.Name;
+                    Keys key = macro.Hotkey;
+                    retList.Add(new RazorEnhanced.HotKey.HotKeyData(name, key));
+                }
+
+                return retList;
+            }
+
             internal static void UpdateKey(string name, Keys key, bool passkey)
             {
                 foreach (DataRow row in m_Dataset.Tables["HOTKEYS"].Rows)
@@ -4846,6 +4864,7 @@ namespace RazorEnhanced
                 }
 
                 Scripts.ClearScriptKey(key);
+                RazorEnhanced.Macros.MacroManager.ClearMacroKey(key);
 
                 foreach (DataRow row in m_Dataset.Tables["DRESS_LISTS"].Rows)
                 {
@@ -4875,6 +4894,10 @@ namespace RazorEnhanced
                 }
 
                 if (Scripts.UsingKey(key))
+                {
+                    return true;
+                }
+                if (RazorEnhanced.Macros.MacroManager.UsingKey(key))
                 {
                     return true;
                 }
@@ -4926,6 +4949,17 @@ namespace RazorEnhanced
                     {
                         key = item.Hotkey;
                         passkey = item.HotKeyPass;
+                        found = true;
+                    }
+                }
+
+                if (!found)
+                {
+                    var macro = RazorEnhanced.Macros.MacroManager.FindMacroByName(name);
+                    if (macro != null)
+                    {
+                        key = macro.Hotkey;
+                        passkey = macro.HotKeyPass;
                         found = true;
                     }
                 }
@@ -5021,6 +5055,17 @@ namespace RazorEnhanced
                     {
                         group = "SList";
                         pass = item.HotKeyPass;
+                        found = true;
+                    }
+                }
+
+                if (!found)
+                {
+                    var macro = RazorEnhanced.Macros.MacroManager.FindMacro(key);
+                    if (macro != null)
+                    {
+                        group = "MList";
+                        pass = macro.HotKeyPass;
                         found = true;
                     }
                 }
