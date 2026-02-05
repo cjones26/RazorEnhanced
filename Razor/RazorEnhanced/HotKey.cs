@@ -1956,10 +1956,11 @@ namespace RazorEnhanced
 
             // Macro -> List
             Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes[8].Nodes.Add("MList", "List");
+            int macroListIndex = Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes[8].Nodes.Count - 1;
             keylist = RazorEnhanced.Settings.HotKey.ReadMacro();
             foreach (HotKeyData keydata in keylist)
             {
-                Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes[8].Nodes[1].Nodes.Add(GenerateNode(keydata));
+                Engine.MainWindow.HotKeyTreeView.Nodes[0].Nodes[8].Nodes[macroListIndex].Nodes.Add(GenerateNode(keydata));
             }
 
             // Virtue
