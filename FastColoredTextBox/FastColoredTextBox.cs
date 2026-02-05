@@ -2495,17 +2495,22 @@ namespace FastColoredTextBoxNS
 
         protected void SetClipboard(DataObject data)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            try
             {
-                try
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     CloseClipboard();
                     Clipboard.SetDataObject(data, true, 5, 100);
                 }
-                catch (ExternalException)
+                else
                 {
-                    //occurs if some other process holds open clipboard
+                    // On Wine/Mono, skip the CloseClipboard P/Invoke and just set text directly
+                    Clipboard.SetText(data.GetData(DataFormats.UnicodeText) as string ?? string.Empty);
                 }
+            }
+            catch (ExternalException)
+            {
+                //occurs if some other process holds open clipboard
             }
         }
 
