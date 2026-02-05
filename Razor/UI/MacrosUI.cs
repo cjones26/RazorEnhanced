@@ -1327,6 +1327,9 @@ namespace Assistant
             var macro = new Macro { Name = name };
             MacroManager.AddMacro(macro);
 
+            // Refresh hotkey tree to include the new macro
+            RazorEnhanced.HotKey.Init();
+
             // Create a blank .macro file in the Macros folder
             try
             {
@@ -1371,6 +1374,9 @@ namespace Assistant
             {
                 // Remove from MacroManager
                 MacroManager.RemoveMacro(macro);
+
+                // Refresh hotkey tree to remove the macro
+                RazorEnhanced.HotKey.Init();
 
                 // Delete the .macro file from the Macros folder
                 string macrosFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Macros");
